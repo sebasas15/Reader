@@ -330,6 +330,11 @@ static DataServiceCBs_t user_Data_ServiceCBs =
   .pfnCfgChangeCb = user_service_CfgChangeCB, // Noti/ind configuration callback handler
 };
 
+static ReaderServiceCBs_t user_Reader_ServiceCBs = {
+        .pfnChangeCb = user_service_ValueChangeCB, // Characteristic value change callback handler
+        .pfnCfgChangeCb = user_service_CfgChangeCB, // Noti/ind configuration callback handler
+        };
+
 
 /*********************************************************************
  * PUBLIC FUNCTIONS
@@ -497,16 +502,24 @@ static void ProjectZero_init(void)
   LedService_AddService( selfEntity );
   ButtonService_AddService( selfEntity );
   DataService_AddService( selfEntity );
-
+  ReaderService_AddService(selfEntity);
   // Register callbacks with the generated services that
   // can generate events (writes received) to the application
   LedService_RegisterAppCBs( &user_LED_ServiceCBs );
   ButtonService_RegisterAppCBs( &user_Button_ServiceCBs );
   DataService_RegisterAppCBs( &user_Data_ServiceCBs );
+  ReaderService_RegisterAppCBs(&user_Reader_ServiceCBs);
 
   // Placeholder variable for characteristic intialization
   uint8_t initVal[40] = {0};
   uint8_t initString[] = "This is a pretty long string, isn't it!";
+
+
+  ReaderService_SetParameter(RS_PAYLOAD_ID, RS_PAYLOAD_LEN, initVal);
+   ReaderService_SetParameter(RS_INICIADO_ID, RS_INICIADO_LEN, initVal);
+   ReaderService_SetParameter(RS_CICLO_DE_LECTURA_ID, RS_CICLO_DE_LECTURA_LEN,
+                              initVal);
+   ReaderService_SetParameter(RS_TIME_ID, RS_TIME_LEN, initVal);
 
   // Initalization of characteristics in LED_Service that can provide data.
   LedService_SetParameter(LS_LED0_ID, LS_LED0_LEN, initVal);
