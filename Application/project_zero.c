@@ -69,7 +69,7 @@
 #include "led_service.h"
 #include "button_service.h"
 #include "data_service.h"
-
+#include "reader_service.h"
 
 /*********************************************************************
  * CONSTANTS
