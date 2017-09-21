@@ -271,7 +271,8 @@ static void user_LedService_ValueChangeHandler(char_data_t *pCharData);
 static void user_ButtonService_CfgChangeHandler(char_data_t *pCharData);
 static void user_DataService_ValueChangeHandler(char_data_t *pCharData);
 static void user_DataService_CfgChangeHandler(char_data_t *pCharData);
-
+static void user_ReaderService_ValueChangeHandler(char_data_t *pCharData);
+static void user_ReaderService_CfgChangeHandler(char_data_t *pCharData);
 // Task handler for sending notifications.
 static void user_updateCharVal(char_data_t *pCharData);
 
@@ -659,6 +660,9 @@ static void user_processApplicationMessage(app_msg_t *pMsg)
         case LED_SERVICE_SERV_UUID:
           user_LedService_ValueChangeHandler(pCharData);
           break;
+        case READER_SERVICE_SERV_UUID:
+            user_ReaderService_ValueChangeHandler(pCharData);
+            break;
         case DATA_SERVICE_SERV_UUID:
           user_DataService_ValueChangeHandler(pCharData);
           break;
@@ -672,6 +676,9 @@ static void user_processApplicationMessage(app_msg_t *pMsg)
         case BUTTON_SERVICE_SERV_UUID:
           user_ButtonService_CfgChangeHandler(pCharData);
           break;
+        case READER_SERVICE_SERV_UUID:
+            user_ReaderService_ValueChangeHandler(pCharData);
+            break;
         case DATA_SERVICE_SERV_UUID:
           user_DataService_CfgChangeHandler(pCharData);
           break;
@@ -831,6 +838,125 @@ static void user_handleButtonPress(button_state_t *pState)
       break;
   }
 }
+
+void user_ReaderService_ValueChangeHandler(char_data_t *pCharData)
+{
+    static uint8_t pretty_data_holder[16]; // 5 bytes as hex string "AA:BB:CC:DD:EE"
+    Util_convertArrayToHexString(pCharData->data, pCharData->dataLen,
+                                 pretty_data_holder,
+                                 sizeof(pretty_data_holder));
+
+    switch (pCharData->paramID)
+    {
+    case RS_INICIADO_ID:
+        Log_info3("Value Change msg: %s %s: %s\n",
+                 (IArg)"Reader Service",
+                 (IArg)"iniciado",
+                 (IArg)pretty_data_holder);
+
+        //Reader_enqueueCmdMsg(CONECTAR, NULL, 0);
+        //Reader_enqueueReadMsg(ONE_SHOT,pCharData->connHandle);
+
+        break;
+
+    case RS_CICLO_DE_LECTURA_ID:
+                Log_info3("Value Change msg: %s %s: %s",
+                (IArg)"Reader Service",
+                (IArg)"ciclo de lectura",
+                (IArg)pretty_data_holder);
+        // Reader_enqueueCmdMsg(SET_READ_TYPE,pCharData->data,pCharData->dataLen);
+
+        break;
+
+
+    case RS_TIME_ID:
+                Log_info3("Value Change msg: %s %s: %s",
+                (IArg)"Reader Service",
+                (IArg)"time",
+                (IArg)pretty_data_holder);
+
+            // Reader_enqueueCmdMsg(SET_TIME,pCharData->data,pCharData->dataLen);
+
+         break;
+
+    default:
+        return;
+    }
+}
+
+/*
+ * @brief   Handle a CCCD (configuration change) write received from a peer
+ *          device. This tells us whether the peer device wants us to send
+ *          Notifications or Indications.
+ *
+ * @param   pCharData  pointer to malloc'd char write data
+ *
+ * @return  None.
+ */
+void user_ReaderService_CfgChangeHandler(char_data_t *pCharData)
+{
+    // Cast received data to uint16, as that's the format for CCCD writes.
+    uint16_t configValue = *(uint16_t *) pCharData->data;
+    char *configValString;
+
+    // Determine what to tell the user
+    switch (configValue)
+    {
+    case GATT_CFG_NO_OPERATION:
+        configValString = "Noti/Ind disabled";
+        break;
+    case GATT_CLIENT_CFG_NOTIFY:
+        configValString = "Notifications enabled";
+        break;
+    case GATT_CLIENT_CFG_INDICATE:
+        configValString = "Indications enabled";
+        break;
+    }
+
+    switch (pCharData->paramID)
+    {
+    case RS_PAYLOAD_ID:
+        Log_info3("CCCD Change msg: %s %s: %s",
+                (IArg)"Reader Service",
+                (IArg)"payload",
+                (IArg)configValString);
+
+        // -------------------------
+        // Do something useful with configValue here. It tells you whether someone
+        // wants to know the state of this characteristic.
+        // ... In the generated example we turn periodic clocks on/off
+        if (configValue)
+        { // 0x0001 and 0x0002 both indicate turned on.
+
+        }
+        else
+        {
+     //       Reader_enqueueCmdMsg(DESCONECTAR, NULL, 0);
+
+        }
+        break;
+
+    case RS_INICIADO_ID:
+                Log_info3("CCCD Change msg: %s %s: %s",
+                (IArg)"Reader Service",
+                (IArg)"iniciado",
+                (IArg)configValString);
+
+        break;
+
+    case RS_CICLO_DE_LECTURA_ID:
+                Log_info3("CCCD Change msg: %s %s: %s",
+                (IArg)"Reader Service",
+                (IArg)"ciclo de lectura",
+                (IArg)configValString);
+        break;
+
+    default:
+        return;
+    }
+}
+
+
 
 /*
  * @brief   Handle a write request sent from a peer device.
@@ -1561,6 +1687,10 @@ static void user_updateCharVal(char_data_t *pCharData)
 
     case BUTTON_SERVICE_SERV_UUID:
       ButtonService_SetParameter(pCharData->paramID, pCharData->dataLen,
+                                 pCharData->data);
+    break;
+    case READER_SERVICE_SERV_UUID:
+      ReaderService_SetParameter(pCharData->paramID, pCharData->dataLen,
                                  pCharData->data);
     break;
 
