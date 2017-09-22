@@ -57,7 +57,7 @@
 #include "button_service.h"
 #include "data_service.h"
 #include "reader_service.h"
-
+#include "reader.h"
 /*********************************************************************
  * CONSTANTS
  */
@@ -102,6 +102,7 @@ typedef struct
   uint16_t svcUUID; // UUID of the service
   uint16_t dataLen; //
   uint8_t  paramID; // Index of the characteristic
+  uint16_t connHandle; //connection handler
   uint8_t  data[];  // Flexible array member, extended to malloc - sizeof(.)
 } char_data_t;
 
@@ -828,8 +829,8 @@ void user_ReaderService_ValueChangeHandler(char_data_t *pCharData)
                  (IArg)"iniciado",
                  (IArg)pretty_data_holder);
 
-        //Reader_enqueueCmdMsg(CONECTAR, NULL, 0);
-        //Reader_enqueueReadMsg(ONE_SHOT,pCharData->connHandle);
+        Reader_enqueueCmdMsg(CONECTAR, NULL, 0);
+        Reader_enqueueReadMsg(ONE_SHOT,pCharData->connHandle);
 
         break;
 
@@ -838,7 +839,7 @@ void user_ReaderService_ValueChangeHandler(char_data_t *pCharData)
                 (IArg)"Reader Service",
                 (IArg)"ciclo de lectura",
                 (IArg)pretty_data_holder);
-        // Reader_enqueueCmdMsg(SET_READ_TYPE,pCharData->data,pCharData->dataLen);
+         Reader_enqueueCmdMsg(SET_READ_TYPE,pCharData->data,pCharData->dataLen);
 
         break;
 
@@ -849,7 +850,7 @@ void user_ReaderService_ValueChangeHandler(char_data_t *pCharData)
                 (IArg)"time",
                 (IArg)pretty_data_holder);
 
-            // Reader_enqueueCmdMsg(SET_TIME,pCharData->data,pCharData->dataLen);
+             Reader_enqueueCmdMsg(SET_TIME,pCharData->data,pCharData->dataLen);
 
          break;
 
