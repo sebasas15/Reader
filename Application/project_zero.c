@@ -47,8 +47,6 @@
 #include <xdc/runtime/Log.h>
 #include <xdc/runtime/Diags.h>
 
-
-
 #include "util.h"
 
 #include "Board.h"
@@ -1738,7 +1736,7 @@ static char *Util_getLocalNameStr(const uint8_t *data) {
 }
 
 
-ICall_Semaphore app_getSem(){
+ICall_Semaphore App_getSem(){
 
     return sem;
 

@@ -59,6 +59,7 @@
 #include "bcomdef.h"
 #include "peripheral.h"
 #include "project_zero.h"
+#include "reader.h"
 
 #include <ti/drivers/UART.h>
 #include <uart_logs.h>
@@ -93,6 +94,8 @@ bleUserCfg_t user0Cfg = BLE_USER_CFG;
 /*******************************************************************************
  * LOCAL VARIABLES
  */
+
+static UART_Handle uHandle;
 
 /*******************************************************************************
  * GLOBAL VARIABLES
@@ -138,7 +141,8 @@ int main()
    * Note: Define xdc_runtime_Log_DISABLE_ALL to remove all impact of Log.
    * Note: NULL as Params gives 115200,8,N,1 and Blocking mode */
   UART_init();
-  UartLog_init(UART_open(Board_UART, NULL));
+  uHandle = UART_open(Board_UART, NULL);
+  UartLog_init(uHandle);
 
   /* Initialize ICall module */
   ICall_init();
@@ -150,6 +154,7 @@ int main()
   GAPRole_createTask();
 
   ProjectZero_createTask();
+  Reader_createTask(uHandle);
 
   /* enable interrupts and start SYS/BIOS */
   BIOS_start();

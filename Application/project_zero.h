@@ -84,7 +84,7 @@ typedef enum
 /*********************************************************************
  * FUNCTIONS
  */
-extern ICall_Semaphore app_getSem();
+extern ICall_Semaphore App_getSem();
 /*
  * Task creation function for the Simple BLE Peripheral.
  */
