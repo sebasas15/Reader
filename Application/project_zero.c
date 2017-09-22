@@ -100,17 +100,6 @@
 /*********************************************************************
  * TYPEDEFS
  */
-// Types of messages that can be sent to the user application task from other
-// tasks or interrupts. Note: Messages from BLE Stack are sent differently.
-typedef enum
-{
-  APP_MSG_SERVICE_WRITE = 0,   /* A characteristic value has been written     */
-  APP_MSG_SERVICE_CFG,         /* A characteristic configuration has changed  */
-  APP_MSG_UPDATE_CHARVAL,      /* Request from ourselves to update a value    */
-  APP_MSG_GAP_STATE_CHANGE,    /* The GAP / connection state has changed      */
-  APP_MSG_BUTTON_DEBOUNCED,    /* A button has been debounced with new value  */
-  APP_MSG_SEND_PASSCODE,       /* A pass-code/PIN is requested during pairing */
-} app_msg_types_t;
 
 // Struct for messages sent to the application task
 typedef struct
@@ -184,14 +173,14 @@ static uint8_t advertData[] =
   DEFAULT_DISCOVERABLE_MODE | GAP_ADTYPE_FLAGS_BREDR_NOT_SUPPORTED,
 
   // complete name
-  13,
+  11,
   GAP_ADTYPE_LOCAL_NAME_COMPLETE,
-  'P', 'r', 'o', 'j', 'e', 'c', 't', ' ', 'Z', 'e', 'r', 'o',
+  'R', 'e', 'a', 'd', 'e', 'r', ' ', ' U', 'H', 'F',
 
 };
 
 // GAP GATT Attributes
-static uint8_t attDeviceName[GAP_DEVICE_NAME_LEN] = "Project Zero";
+static uint8_t attDeviceName[GAP_DEVICE_NAME_LEN] = "Reader UHF";
 
 // Globals used for ATT Response retransmission
 static gattMsgEvent_t *pAttRsp = NULL;
@@ -278,9 +267,7 @@ static void user_updateCharVal(char_data_t *pCharData);
 
 // Utility functions
 static void user_enqueueRawAppMsg(app_msg_types_t appMsgType, uint8_t *pData, uint16_t len );
-static void user_enqueueCharDataMsg(app_msg_types_t appMsgType, uint16_t connHandle,
-                                    uint16_t serviceUUID, uint8_t paramID,
-                                    uint8_t *pValue, uint16_t len);
+
 static void buttonCallbackFxn(PIN_Handle handle, PIN_Id pinId);
 
 static char *Util_convertArrayToHexString(uint8_t const *src, uint8_t src_len,
@@ -1602,7 +1589,7 @@ static void buttonCallbackFxn(PIN_Handle handle, PIN_Id pinId)
  * @oaram  *pValue       Pointer to characteristic value
  * @param  len           Length of characteristic data
  */
-static void user_enqueueCharDataMsg( app_msg_types_t appMsgType,
+void user_enqueueCharDataMsg( app_msg_types_t appMsgType,
                                      uint16_t connHandle,
                                      uint16_t serviceUUID, uint8_t paramID,
                                      uint8_t *pValue, uint16_t len )
@@ -1760,6 +1747,15 @@ static char *Util_getLocalNameStr(const uint8_t *data) {
 
   return localNameStr;
 }
+
+
+ICall_Semaphore app_getSem(){
+
+    return sem;
+
+
+}
+
 
 /*********************************************************************
 *********************************************************************/

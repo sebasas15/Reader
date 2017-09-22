@@ -49,6 +49,17 @@ extern "C"
 /*********************************************************************
  * TYPEDEFS
  */
+// Types of messages that can be sent to the user application task from other
+// tasks or interrupts. Note: Messages from BLE Stack are sent differently.
+typedef enum
+{
+  APP_MSG_SERVICE_WRITE = 0,   /* A characteristic value has been written     */
+  APP_MSG_SERVICE_CFG,         /* A characteristic configuration has changed  */
+  APP_MSG_UPDATE_CHARVAL,      /* Request from ourselves to update a value    */
+  APP_MSG_GAP_STATE_CHANGE,    /* The GAP / connection state has changed      */
+  APP_MSG_BUTTON_DEBOUNCED,    /* A button has been debounced with new value  */
+  APP_MSG_SEND_PASSCODE,       /* A pass-code/PIN is requested during pairing */
+} app_msg_types_t;
 
 /*********************************************************************
  * CONSTANTS
@@ -61,13 +72,15 @@ extern "C"
 /*********************************************************************
  * FUNCTIONS
  */
-
+extern ICall_Semaphore app_getSem();
 /*
  * Task creation function for the Simple BLE Peripheral.
  */
 extern void ProjectZero_createTask(void);
 
-
+extern void user_enqueueCharDataMsg(app_msg_types_t appMsgType, uint16_t connHandle,
+                                    uint16_t serviceUUID, uint8_t paramID,
+                                    uint8_t *pValue, uint16_t len);
 /*********************************************************************
 *********************************************************************/
 
