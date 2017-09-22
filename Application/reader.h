@@ -18,7 +18,6 @@ extern "C"
 #include <ti/drivers/UART.h>
 
 
-
 typedef enum {
 
     CONECTAR = 0,

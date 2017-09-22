@@ -353,9 +353,9 @@ static void ProjectZero_init(void)
   // Register the current thread as an ICall dispatcher application
   // so that the application can send and receive messages via ICall to Stack.
   ICall_registerApp(&selfEntity, &sem);
-
+#ifndef DISABLE_LOG_APP
   Log_info0("Initializing the user task, hardware, BLE stack and services.");
-
+#endif
   // Open display. By default this is disabled via the predefined symbol Display_DISABLE_ALL.
   dispHandle = Display_open(Display_Type_LCD, NULL);
 
@@ -371,19 +371,25 @@ static void ProjectZero_init(void)
   // Open LED pins
   ledPinHandle = PIN_open(&ledPinState, ledPinTable);
   if(!ledPinHandle) {
+#ifndef DISABLE_LOG_APP
     Log_error0("Error initializing board LED pins");
+#endif
     Task_exit();
   }
 
   buttonPinHandle = PIN_open(&buttonPinState, buttonPinTable);
   if(!buttonPinHandle) {
+#ifndef DISABLE_LOG_APP
     Log_error0("Error initializing button pins");
+#endif
     Task_exit();
   }
 
   // Setup callback for button pins
   if (PIN_registerIntCb(buttonPinHandle, &buttonCallbackFxn) != 0) {
+#ifndef DISABLE_LOG_APP
     Log_error0("Error registering button callback function");
+#endif
     Task_exit();
   }
 
@@ -431,10 +437,10 @@ static void ProjectZero_init(void)
 
   // Initialize Advertisement data
   GAPRole_SetParameter(GAPROLE_ADVERT_DATA, sizeof(advertData), advertData);
-
+#ifndef DISABLE_LOG_APP
   Log_info1("Name in advertData array: \x1b[33m%s\x1b[0m",
             (IArg)Util_getLocalNameStr(advertData));
-
+#endif
   // Set advertising interval
   uint16_t advInt = DEFAULT_ADVERTISING_INTERVAL;
 
@@ -671,9 +677,11 @@ static void user_processApplicationMessage(app_msg_t *pMsg)
     case APP_MSG_SEND_PASSCODE: /* Message about pairing PIN request */
       {
         passcode_req_t *pReq = (passcode_req_t *)pMsg->pdu;
+#ifndef DISABLE_LOG_APP
         Log_info2("BondMgr Requested passcode. We are %s passcode %06d",
                   (IArg)(pReq->uiInputs?"Sending":"Displaying"),
                   DEFAULT_PASSCODE);
+#endif
         // Send passcode response.
         GAPBondMgr_PasscodeRsp(pReq->connHandle, SUCCESS, DEFAULT_PASSCODE);
       }
@@ -738,13 +746,17 @@ static void user_processGapStateChangeEvt(gaprole_States_t newState)
 
         // Display device address
         char *cstr_ownAddress = Util_convertBdAddr2Str(ownAddress);
+#ifndef DISABLE_LOG_APP
         Log_info1("GAP is started. Our address: \x1b[32m%s\x1b[0m", (IArg)cstr_ownAddress);
+#endif
       }
       break;
 
     case GAPROLE_ADVERTISING:
-      Log_info0("Advertising");
-      break;
+#ifndef DISABLE_LOG_APP
+        Log_info0("Advertising");
+#endif
+        break;
 
     case GAPROLE_CONNECTED:
       {
@@ -753,25 +765,35 @@ static void user_processGapStateChangeEvt(gaprole_States_t newState)
         GAPRole_GetParameter(GAPROLE_CONN_BD_ADDR, peerAddress);
 
         char *cstr_peerAddress = Util_convertBdAddr2Str(peerAddress);
+#ifndef DISABLE_LOG_APP
         Log_info1("Connected. Peer address: \x1b[32m%s\x1b[0m", (IArg)cstr_peerAddress);
-       }
+#endif
+      }
       break;
 
     case GAPROLE_CONNECTED_ADV:
-      Log_info0("Connected and advertising");
-      break;
+#ifndef DISABLE_LOG_APP
+        Log_info0("Connected and advertising");
+#endif
+        break;
 
     case GAPROLE_WAITING:
-      Log_info0("Disconnected / Idle");
-      break;
+#ifndef DISABLE_LOG_APP
+        Log_info0("Disconnected / Idle");
+#endif
+        break;
 
     case GAPROLE_WAITING_AFTER_TIMEOUT:
-      Log_info0("Connection timed out");
-      break;
+#ifndef DISABLE_LOG_APP
+        Log_info0("Connection timed out");
+#endif
+        break;
 
     case GAPROLE_ERROR:
-      Log_info0("Error");
-      break;
+#ifndef DISABLE_LOG_APP
+        Log_info0("Error");
+#endif
+        break;
 
     default:
       break;
@@ -792,11 +814,12 @@ static void user_processGapStateChangeEvt(gaprole_States_t newState)
  */
 static void user_handleButtonPress(button_state_t *pState)
 {
-  Log_info2("%s %s",
+#ifndef DISABLE_LOG_APP
+    Log_info2("%s %s",
     (IArg)(pState->pinId == Board_BUTTON0?"Button 0":"Button 1"),
     (IArg)(pState->state?"\x1b[32mpressed\x1b[0m":
                          "\x1b[33mreleased\x1b[0m"));
-
+#endif
   // Update the service with the new value.
   // Will automatically send notification/indication if enabled.
   switch (pState->pinId)
@@ -824,32 +847,36 @@ void user_ReaderService_ValueChangeHandler(char_data_t *pCharData)
     switch (pCharData->paramID)
     {
     case RS_INICIADO_ID:
+#ifndef DISABLE_LOG_APP
         Log_info3("Value Change msg: %s %s: %s\n",
                  (IArg)"Reader Service",
                  (IArg)"iniciado",
                  (IArg)pretty_data_holder);
-
+#endif
         Reader_enqueueCmdMsg(CONECTAR, NULL, 0);
         Reader_enqueueReadMsg(ONE_SHOT,pCharData->connHandle);
 
         break;
 
     case RS_CICLO_DE_LECTURA_ID:
-                Log_info3("Value Change msg: %s %s: %s",
+#ifndef DISABLE_LOG_APP
+        Log_info3("Value Change msg: %s %s: %s",
                 (IArg)"Reader Service",
                 (IArg)"ciclo de lectura",
                 (IArg)pretty_data_holder);
-         Reader_enqueueCmdMsg(SET_READ_TYPE,pCharData->data,pCharData->dataLen);
+#endif
+        Reader_enqueueCmdMsg(SET_READ_TYPE,pCharData->data,pCharData->dataLen);
 
         break;
 
 
     case RS_TIME_ID:
-                Log_info3("Value Change msg: %s %s: %s",
+#ifndef DISABLE_LOG_APP
+        Log_info3("Value Change msg: %s %s: %s",
                 (IArg)"Reader Service",
                 (IArg)"time",
                 (IArg)pretty_data_holder);
-
+#endif
              Reader_enqueueCmdMsg(SET_TIME,pCharData->data,pCharData->dataLen);
 
          break;
@@ -891,11 +918,12 @@ void user_ReaderService_CfgChangeHandler(char_data_t *pCharData)
     switch (pCharData->paramID)
     {
     case RS_PAYLOAD_ID:
+#ifndef DISABLE_LOG_APP
         Log_info3("CCCD Change msg: %s %s: %s",
                 (IArg)"Reader Service",
                 (IArg)"payload",
                 (IArg)configValString);
-
+#endif
         // -------------------------
         // Do something useful with configValue here. It tells you whether someone
         // wants to know the state of this characteristic.
@@ -912,18 +940,21 @@ void user_ReaderService_CfgChangeHandler(char_data_t *pCharData)
         break;
 
     case RS_INICIADO_ID:
-                Log_info3("CCCD Change msg: %s %s: %s",
+#ifndef DISABLE_LOG_APP
+        Log_info3("CCCD Change msg: %s %s: %s",
                 (IArg)"Reader Service",
                 (IArg)"iniciado",
                 (IArg)configValString);
-
+#endif
         break;
 
     case RS_CICLO_DE_LECTURA_ID:
-                Log_info3("CCCD Change msg: %s %s: %s",
+#ifndef DISABLE_LOG_APP
+        Log_info3("CCCD Change msg: %s %s: %s",
                 (IArg)"Reader Service",
                 (IArg)"ciclo de lectura",
                 (IArg)configValString);
+#endif
         break;
 
     default:
@@ -955,33 +986,39 @@ void user_LedService_ValueChangeHandler(char_data_t *pCharData)
   switch (pCharData->paramID)
   {
     case LS_LED0_ID:
-      Log_info3("Value Change msg: %s %s: %s",
+#ifndef DISABLE_LOG_APP
+        Log_info3("Value Change msg: %s %s: %s",
                 (IArg)"LED Service",
                 (IArg)"LED0",
                 (IArg)pretty_data_holder);
-
+#endif
       // Do something useful with pCharData->data here
       // -------------------------
       // Set the output value equal to the received value. 0 is off, not 0 is on
       PIN_setOutputValue(ledPinHandle, Board_LED0, pCharData->data[0]);
+#ifndef DISABLE_LOG_APP
       Log_info2("Turning %s %s",
                 (IArg)"\x1b[31mLED0\x1b[0m",
                 (IArg)(pCharData->data[0]?"on":"off"));
+#endif
       break;
 
     case LS_LED1_ID:
-      Log_info3("Value Change msg: %s %s: %s",
+#ifndef DISABLE_LOG_APP
+        Log_info3("Value Change msg: %s %s: %s",
                 (IArg)"LED Service",
                 (IArg)"LED1",
                 (IArg)pretty_data_holder);
-
+#endif
       // Do something useful with pCharData->data here
       // -------------------------
       // Set the output value equal to the received value. 0 is off, not 0 is on
       PIN_setOutputValue(ledPinHandle, Board_LED1, pCharData->data[0]);
+#ifndef DISABLE_LOG_APP
       Log_info2("Turning %s %s",
                 (IArg)"\x1b[32mLED1\x1b[0m",
                 (IArg)(pCharData->data[0]?"on":"off"));
+#endif
       break;
 
   default:
@@ -1022,22 +1059,24 @@ void user_ButtonService_CfgChangeHandler(char_data_t *pCharData)
   switch (pCharData->paramID)
   {
     case BS_BUTTON0_ID:
-      Log_info3("CCCD Change msg: %s %s: %s",
+#ifndef DISABLE_LOG_APP
+        Log_info3("CCCD Change msg: %s %s: %s",
                 (IArg)"Button Service",
                 (IArg)"BUTTON0",
                 (IArg)configValString);
-      // -------------------------
+#endif      // -------------------------
       // Do something useful with configValue here. It tells you whether someone
       // wants to know the state of this characteristic.
       // ...
       break;
 
     case BS_BUTTON1_ID:
-      Log_info3("CCCD Change msg: %s %s: %s",
+#ifndef DISABLE_LOG_APP
+        Log_info3("CCCD Change msg: %s %s: %s",
                 (IArg)"Button Service",
                 (IArg)"BUTTON1",
                 (IArg)configValString);
-      // -------------------------
+#endif // -------------------------
       // Do something useful with configValue here. It tells you whether someone
       // wants to know the state of this characteristic.
       // ...
@@ -1074,18 +1113,21 @@ void user_DataService_ValueChangeHandler(char_data_t *pCharData)
       memcpy(received_string, pCharData->data, DS_STRING_LEN-1);
       // Needed to copy before log statement, as the holder array remains after
       // the pCharData message has been freed and reused for something else.
+#ifndef DISABLE_LOG_APP
       Log_info3("Value Change msg: %s %s: %s",
                 (IArg)"Data Service",
                 (IArg)"String",
                 (IArg)received_string);
+#endif
       break;
 
     case DS_STREAM_ID:
-      Log_info3("Value Change msg: Data Service Stream: %02x:%02x:%02x...",
+#ifndef DISABLE_LOG_APP
+        Log_info3("Value Change msg: Data Service Stream: %02x:%02x:%02x...",
                 (IArg)pCharData->data[0],
                 (IArg)pCharData->data[1],
                 (IArg)pCharData->data[2]);
-      // -------------------------
+#endif      // -------------------------
       // Do something useful with pCharData->data here
       break;
 
@@ -1126,11 +1168,12 @@ void user_DataService_CfgChangeHandler(char_data_t *pCharData)
   switch (pCharData->paramID)
   {
     case DS_STREAM_ID:
-      Log_info3("CCCD Change msg: %s %s: %s",
+#ifndef DISABLE_LOG_APP
+        Log_info3("CCCD Change msg: %s %s: %s",
                 (IArg)"Data Service",
                 (IArg)"Stream",
                 (IArg)configValString);
-      // -------------------------
+#endif      // -------------------------
       // Do something useful with configValue here. It tells you whether someone
       // wants to know the state of this characteristic.
       // ...
@@ -1168,8 +1211,10 @@ static uint8_t ProjectZero_processStackMsg(ICall_Hdr *pMsg)
         {
           case HCI_COMMAND_COMPLETE_EVENT_CODE:
             // Process HCI Command Complete Event
-            Log_info0("HCI Command Complete Event received");
-            break;
+#ifndef DISABLE_LOG_APP
+              Log_info0("HCI Command Complete Event received");
+#endif
+              break;
 
           default:
             break;
@@ -1196,9 +1241,10 @@ static uint8_t ProjectZero_processGATTMsg(gattMsgEvent_t *pMsg)
   // See if GATT server was unable to transmit an ATT response
   if (pMsg->hdr.status == blePending)
   {
-    Log_warning1("Outgoing RF FIFO full. Re-schedule transmission of msg with opcode 0x%02x",
+#ifndef DISABLE_LOG_APP
+      Log_warning1("Outgoing RF FIFO full. Re-schedule transmission of msg with opcode 0x%02x",
       pMsg->method);
-
+#endif
     // No HCI buffer was available. Let's try to retransmit the response
     // on the next connection event.
     if (HCI_EXT_ConnEventNoticeCmd(pMsg->connHandle, selfEntity,
@@ -1221,18 +1267,24 @@ static uint8_t ProjectZero_processGATTMsg(gattMsgEvent_t *pMsg)
     // The app is informed in case it wants to drop the connection.
 
     // Log the opcode of the message that caused the violation.
-    Log_error1("Flow control violated. Opcode of offending ATT msg: 0x%02x",
+#ifndef DISABLE_LOG_APP
+      Log_error1("Flow control violated. Opcode of offending ATT msg: 0x%02x",
       pMsg->msg.flowCtrlEvt.opcode);
+#endif
   }
   else if (pMsg->method == ATT_MTU_UPDATED_EVENT)
   {
     // MTU size updated
-    Log_info1("MTU Size change: %d bytes", pMsg->msg.mtuEvt.MTU);
+#ifndef DISABLE_LOG_APP
+      Log_info1("MTU Size change: %d bytes", pMsg->msg.mtuEvt.MTU);
+#endif
   }
   else
   {
     // Got an expected GATT message from a peer.
-    Log_info1("Recevied GATT Message. Opcode: 0x%02x", pMsg->method);
+#ifndef DISABLE_LOG_APP
+      Log_info1("Recevied GATT Message. Opcode: 0x%02x", pMsg->method);
+#endif
   }
 
   // Free message payload. Needed only for ATT Protocol messages
@@ -1284,8 +1336,10 @@ static void ProjectZero_sendAttRsp(void)
     else
     {
       // Continue retrying
-      Log_warning2("Retrying message with opcode 0x%02x. Attempt %d",
+#ifndef DISABLE_LOG_APP
+        Log_warning2("Retrying message with opcode 0x%02x. Attempt %d",
         pAttRsp->method, rspTxRetry);
+#endif
     }
   }
 }
@@ -1305,14 +1359,17 @@ static void ProjectZero_freeAttRsp(uint8_t status)
     // See if the response was sent out successfully
     if (status == SUCCESS)
     {
-      Log_info2("Sent message with opcode 0x%02x. Attempt %d",
+#ifndef DISABLE_LOG_APP
+        Log_info2("Sent message with opcode 0x%02x. Attempt %d",
         pAttRsp->method, rspTxRetry);
+#endif
     }
     else
     {
+#ifndef DISABLE_LOG_APP
       Log_error2("Gave up message with opcode 0x%02x. Status: %d",
         pAttRsp->method, status);
-
+#endif
       // Free response payload
       GATT_bm_free(&pAttRsp->msg, pAttRsp->method);
     }
@@ -1348,7 +1405,9 @@ static void ProjectZero_freeAttRsp(uint8_t status)
  */
 static void user_gapStateChangeCB(gaprole_States_t newState)
 {
+    #ifndef DISABLE_LOG_APP
   Log_info1("(CB) GAP State change: %d, Sending msg to app.", (IArg)newState);
+#endif
   user_enqueueRawAppMsg( APP_MSG_GAP_STATE_CHANGE, (uint8_t *)&newState, sizeof(newState) );
 }
 
@@ -1392,24 +1451,32 @@ static void user_gapBondMgr_pairStateCB(uint16_t connHandle, uint8_t state,
 {
   if (state == GAPBOND_PAIRING_STATE_STARTED)
   {
+#ifndef DISABLE_LOG_APP
     Log_info0("Pairing started");
+#endif
   }
   else if (state == GAPBOND_PAIRING_STATE_COMPLETE)
   {
     if (status == SUCCESS)
     {
+#ifndef DISABLE_LOG_APP
       Log_info0("Pairing completed successfully.");
+#endif
     }
     else
     {
+#ifndef DISABLE_LOG_APP
       Log_error1("Pairing failed. Error: %02x", status);
+#endif
     }
   }
   else if (state == GAPBOND_PAIRING_STATE_BONDED)
   {
     if (status == SUCCESS)
     {
+#ifndef DISABLE_LOG_APP
      Log_info0("Re-established pairing from stored bond info.");
+#endif
     }
   }
 }
@@ -1422,9 +1489,11 @@ static void user_service_ValueChangeCB( uint16_t connHandle, uint16_t svcUuid,
                                         uint16_t len )
 {
   // See the service header file to compare paramID with characteristic.
-  Log_info2("(CB) Characteristic value change: svc(0x%04x) paramID(%d). "
+#ifndef DISABLE_LOG_APP
+    Log_info2("(CB) Characteristic value change: svc(0x%04x) paramID(%d). "
             "Sending msg to app.", (IArg)svcUuid, (IArg)paramID);
-  user_enqueueCharDataMsg(APP_MSG_SERVICE_WRITE, connHandle, svcUuid, paramID,
+#endif
+    user_enqueueCharDataMsg(APP_MSG_SERVICE_WRITE, connHandle, svcUuid, paramID,
                           pValue, len);
 }
 
@@ -1435,8 +1504,10 @@ static void user_service_CfgChangeCB( uint16_t connHandle, uint16_t svcUuid,
                                       uint8_t paramID, uint8_t *pValue,
                                       uint16_t len )
 {
+#ifndef DISABLE_LOG_APP
   Log_info2("(CB) Char config change: svc(0x%04x) paramID(%d). "
             "Sending msg to app.", (IArg)svcUuid, (IArg)paramID);
+#endif
   user_enqueueCharDataMsg(APP_MSG_SERVICE_CFG, connHandle, svcUuid,
                           paramID, pValue, len);
 }
@@ -1532,9 +1603,10 @@ static void buttonDebounceSwiFxn(UArg buttonId)
  */
 static void buttonCallbackFxn(PIN_Handle handle, PIN_Id pinId)
 {
+#ifndef DISABLE_LOG_APP
   Log_info1("Button interrupt: %s",
             (IArg)((pinId == Board_BUTTON0)?"Button 0":"Button 1"));
-
+#endif
   // Disable interrupt on that pin for now. Re-enabled after debounce.
   PIN_setConfig(handle, PIN_BM_IRQ, pinId | PIN_IRQ_DIS);
 

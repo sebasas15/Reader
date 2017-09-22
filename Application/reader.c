@@ -96,7 +96,9 @@ static void Reader_init()
 {
 
     //return;
+#ifndef DISABLE_LOG_APP
     Log_info0("iniciando Reader");
+#endif
     char str[64];
     buffer[0] = 1;
     antennaList = buffer;
@@ -170,7 +172,9 @@ static void ejecutarComando(reader_msg_t * msg)
         break;
     case DESCONECTAR:
         //    TMR_destroy(NULL);
+#ifndef DISABLE_LOG_APP
         Log_info0("desconectando");
+#endif
         break;
     case LEER:
         ejecutarLectura(msg);
@@ -201,16 +205,24 @@ static void setReadType(reader_msg_t * msg)
     switch (tipo_de_lectura)
     {
     case ONE_SHOT:
+#ifndef DISABLE_LOG_APP
         Log_info0("ONE_SHOT");
+#endif
         break;
     case TIMEOUT:
+#ifndef DISABLE_LOG_APP
         Log_info0("TIMEOUT");
+#endif
         break;
     case PERIODIC:
+#ifndef DISABLE_LOG_APP
         Log_info0("PERIODIC");
+#endif
         break;
     case CONTINOUS:
+#ifndef DISABLE_LOG_APP
         Log_info0("CONTINOUS");
+#endif
         break;
     default:
         break;
@@ -266,8 +278,14 @@ static void Reader_leer(uint16_t connHandler)
 //        responseType = Reader_Imp_readTagEPC(myEPC, myEPClength, 500); //Scan for a new tag up to 500ms
 //      }
 
-
+#ifndef DISABLE_LOG_APP
     Log_info1("enviando dato %s",epcStr);
+#endif
+    #ifdef LOG_SYSMIN
+    System_printf("enviando dato %s\n",epcStr);
+    System_flush();
+    #endif
+
     user_enqueueCharDataMsg(APP_MSG_UPDATE_CHARVAL, connHandler,
     READER_SERVICE_SERV_UUID,
                             RS_PAYLOAD_ID, epcStr, strlen(epcStr));

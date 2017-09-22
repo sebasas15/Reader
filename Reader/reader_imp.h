@@ -18,6 +18,10 @@
 #include "default_args.h"
 #include <xdc/runtime/Log.h>
 
+
+#define DISABLE_LOG_APP
+#define LOG_SYSMIN
+
 #define MAX_MSG_SIZE 255
 
 #define TMR_SR_OPCODE_VERSION 0x03

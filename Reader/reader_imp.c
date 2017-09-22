@@ -760,10 +760,9 @@ extern uint8_t Reader_Imp_parseResponse(void)
     {
         if (params->printDebug == true)
         {
-            if (params->lightDebug)
+#ifndef DISABLE_LOG_APP
                 Log_info1("Unknown opcode in response: 0x%x",opCode);
-            else
-                System_printf("Unknown opcode in response: 0x%x", opCode);
+#endif
 
         }
         return (ERROR_UNKNOWN_OPCODE);
@@ -780,10 +779,10 @@ extern void Reader_Imp_sendMessageImp(uint8_t opcode, uint8_t *data,
     params->msg[2] = opcode;
     if (params->printDebug)
     {
-        if (params->lightDebug)
-            Log_info2("opcode: 0x%x; size: 0x%x",opcode,size);
-        else
-            System_printf("opcode: 0x%x; size: 0x%x", opcode, size);
+#ifndef DISABLE_LOG_APP
+        Log_info2("opcode: 0x%x; size: 0x%x",opcode,size);
+#endif
+
     } //Copy the data into msg array
     for (uint8_t x = 0; x < size; x++)
         params->msg[3 + x] = data[x];
@@ -808,10 +807,9 @@ extern void Reader_Imp_sendCommandImp(uint16_t timeOut, bool waitForResponse)
 
     if (params->printDebug == true)
     {
-        if (params->lightDebug)
+#ifndef DISABLE_LOG_APP
             Log_info0("sendCommand: ");
-        else
-            System_printf("sendCommand: ");
+#endif
         Reader_Imp_printMessageArray();
     }
 
@@ -889,10 +887,9 @@ extern void Reader_Imp_sendCommandImp(uint16_t timeOut, bool waitForResponse)
     //Used for debugging: Does the user want us to print the command to serial port?
     if (params->printDebug == true)
     {
-        if (params->lightDebug)
+#ifndef DISABLE_LOG_APP
             Log_info0("response: ");
-        else
-            System_printf("response: ");
+#endif
         Reader_Imp_printMessageArray();
     }
 
@@ -904,10 +901,9 @@ extern void Reader_Imp_sendCommandImp(uint16_t timeOut, bool waitForResponse)
         params->msg[0] = ERROR_CORRUPT_RESPONSE;
         if (params->printDebug == true)
         {
-            if (params->lightDebug)
+#ifndef DISABLE_LOG_APP
                 Log_info0("Corrupt response");
-            else
-                System_printf("Corrupt response");
+#endif
 
         }
         return;
@@ -919,10 +915,9 @@ extern void Reader_Imp_sendCommandImp(uint16_t timeOut, bool waitForResponse)
         params->msg[0] = ERROR_WRONG_OPCODE_RESPONSE;
         if (params->printDebug == true)
         {
-            if (params->lightDebug)
+#ifndef DISABLE_LOG_APP
                 Log_info0("Wrong opcode response");
-            else
-                System_printf("Wrong opcode response");
+#endif
         }
         return;
     }
@@ -944,17 +939,19 @@ extern void Reader_Imp_printMessageArray(void)
     {
         uint8_t amtToPrint = params->msg[1] + 5;
         static uint8_t pretty_data_holder[100]; // 5 bytes as hex string "AA:BB:CC:DD:EE"
+#ifndef DISABLE_LOG_APP
         Log_info1("opcode 0x%x",params->msg[2]);
+#endif
         if (amtToPrint > MAX_MSG_SIZE)
             amtToPrint = MAX_MSG_SIZE; //Limit this size
 
         Util_convertArrayToHexString(params->msg, amtToPrint,
                                      pretty_data_holder,
                                      sizeof(pretty_data_holder));
-        if (params->lightDebug)
-            Log_info1("datos %s",pretty_data_holder);
-        else
-            System_printf("datos %s", pretty_data_holder);
+#ifndef DISABLE_LOG_APP
+        Log_info1("datos %s",pretty_data_holder);
+#endif
+
     }
 }
 
