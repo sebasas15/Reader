@@ -42,6 +42,18 @@ extern "C"
  * INCLUDES
  */
 
+
+// Stack headers
+#include <hci_tl.h>
+#include <gap.h>
+#include <gatt.h>
+#include <gapgattserver.h>
+#include <gattservapp.h>
+#include <osal_snv.h>
+#include <gapbondmgr.h>
+#include <peripheral.h>
+#include <icall_apimsg.h>
+#include <devinfoservice.h>
 /*********************************************************************
 *  EXTERNAL VARIABLES
 */
